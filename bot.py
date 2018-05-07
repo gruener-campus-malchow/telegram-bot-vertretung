@@ -1,20 +1,8 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
-
-from telegram import (ReplyKeyboardMarkup, ReplyKeyboardRemove)
-from telegram.ext import (Updater, CommandHandler, MessageHandler, Filters, RegexHandler,
-                          ConversationHandler)
-import requests,json
-
 import logging
-
-#URL-Parameter
-#params = {'cert': 0}
-
-#r = requests.get('http://fbi.gruener-campus-malchow.de/cis/pupilplanapi', params=params)
-
-#vt = json.loads(json.dumps(r.json()))
+import json
+import requests
+from telegram import (ReplyKeyboardRemove)
+from telegram.ext import (Updater, CommandHandler, MessageHandler, Filters, ConversationHandler)
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO)
@@ -23,11 +11,6 @@ logger = logging.getLogger(__name__)
 
 KLASSE = range(1)
 
-def getVT():
-    params = {'cert': 0}
-    r = requests.get('http://fbi.gruener-campus-malchow.de/cis/pupilplanapi', params=params)
-    vt = json.loads(json.dumps(r.json()))
-    return vt
 
 def start(bot, update):
     user = update.message.from_user
@@ -35,22 +18,24 @@ def start(bot, update):
 
     return KLASSE
 
+
 def klasse(bot, update):
     try:
-        for n in getVT()[0][update.message.text]:
-            #update.message.reply_text(vt[0][update.message.text][n])
-            #update.message.reply_text(vt[0][update.message.text])
-            update.message.reply_text('Stunde: ' + getVT()[0][update.message.text][n]['Stunde'] + '\n' +
-                                      'Fach: ' + getVT()[0][update.message.text][n]['Fach'] + '\n' +
-                                      'LehrerIn: ' + getVT()[0][update.message.text][n]['LehrerIn'] + '\n' +
-                                      'Raum: ' + getVT()[0][update.message.text][n]['Raum'] + '\n' +
-                                      'Art: ' + getVT()[0][update.message.text][n]['Art'] + '\n' +
-                                      'Hinweis: ' + getVT()[0][update.message.text][n]['Hinweis'] + '\n')
+        params = {'cert': 0}
+        r = requests.get('http://fbi.gruener-campus-malchow.de/cis/pupilplanapi', params=params)
+        vt = json.loads(json.dumps(r.json()))
+        for n in vt[0][update.message.text]:
+            update.message.reply_text('Stunde: ' + vt[0][update.message.text][n]['Stunde'] + '\n' +
+                                      'Fach: ' + vt[0][update.message.text][n]['Fach'] + '\n' +
+                                      'LehrerIn: ' + vt[0][update.message.text][n]['LehrerIn'] + '\n' +
+                                      'Raum: ' + vt[0][update.message.text][n]['Raum'] + '\n' +
+                                      'Art: ' + vt[0][update.message.text][n]['Art'] + '\n' +
+                                      'Hinweis: ' + vt[0][update.message.text][n]['Hinweis'] + '\n')
     except:
         update.message.reply_text('Entweder ist das keine gültige Klasse, oder sie hat heute keine Vertretung.')
 
-
     return ConversationHandler.END
+
 
 def cancel(bot, update):
     update.message.reply_text('Bye', reply_markup=ReplyKeyboardRemove())
@@ -90,4 +75,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
