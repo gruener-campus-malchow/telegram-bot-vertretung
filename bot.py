@@ -10,19 +10,24 @@ import requests,json
 import logging
 
 #URL-Parameter
-params = {'cert': 0}
+#params = {'cert': 0}
 
-r = requests.get('http://fbi.gruener-campus-malchow.de/cis/pupilplanapi', params=params)
+#r = requests.get('http://fbi.gruener-campus-malchow.de/cis/pupilplanapi', params=params)
 
-vt = json.loads(json.dumps(r.json()))
+#vt = json.loads(json.dumps(r.json()))
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-                    level=logging.NOTSET)
+                    level=logging.INFO)
 
 logger = logging.getLogger(__name__)
 
 KLASSE = range(1)
 
+def getVT():
+    params = {'cert': 0}
+    r = requests.get('http://fbi.gruener-campus-malchow.de/cis/pupilplanapi', params=params)
+    vt = json.loads(json.dumps(r.json()))
+    return vt
 
 def start(bot, update):
     user = update.message.from_user
@@ -32,15 +37,15 @@ def start(bot, update):
 
 def klasse(bot, update):
     try:
-        for n in vt[0][update.message.text]:
+        for n in getVT()[0][update.message.text]:
             #update.message.reply_text(vt[0][update.message.text][n])
             #update.message.reply_text(vt[0][update.message.text])
-            update.message.reply_text('Stunde: ' + vt[0][update.message.text][n]['Stunde'] + '\n' +
-                                      'Fach: ' + vt[0][update.message.text][n]['Fach'] + '\n' +
-                                      'LehrerIn: ' + vt[0][update.message.text][n]['LehrerIn'] + '\n' +
-                                      'Raum: ' + vt[0][update.message.text][n]['Raum'] + '\n' +
-                                      'Art: ' + vt[0][update.message.text][n]['Art'] + '\n' +
-                                      'Hinweis: ' + vt[0][update.message.text][n]['Hinweis'] + '\n')
+            update.message.reply_text('Stunde: ' + getVT()[0][update.message.text][n]['Stunde'] + '\n' +
+                                      'Fach: ' + getVT()[0][update.message.text][n]['Fach'] + '\n' +
+                                      'LehrerIn: ' + getVT()[0][update.message.text][n]['LehrerIn'] + '\n' +
+                                      'Raum: ' + getVT()[0][update.message.text][n]['Raum'] + '\n' +
+                                      'Art: ' + getVT()[0][update.message.text][n]['Art'] + '\n' +
+                                      'Hinweis: ' + getVT()[0][update.message.text][n]['Hinweis'] + '\n')
     except:
         update.message.reply_text('Entweder ist das keine gültige Klasse, oder sie hat heute keine Vertretung.')
 
