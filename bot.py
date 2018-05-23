@@ -24,15 +24,18 @@ def klasse(bot, update):
         params = {'cert': 0}
         r = requests.get('http://fbi.gruener-campus-malchow.de/cis/pupilplanapi', params=params)
         vt = json.loads(json.dumps(r.json()))
+        update.message.reply_text('Hinweis: Aus Datenschutzgründen können keine Lehrernamen angezeigt werden.')
+        for info in vt[0]['Informationen']:
+            update.message.reply_text('Informationen:\n\n' + info)
         for n in vt[0][update.message.text]:
             update.message.reply_text('Stunde: ' + vt[0][update.message.text][n]['Stunde'] + '\n' +
                                       'Fach: ' + vt[0][update.message.text][n]['Fach'] + '\n' +
-                                      'LehrerIn: ' + vt[0][update.message.text][n]['LehrerIn'] + '\n' +
+                                      #'LehrerIn: ' + vt[0][update.message.text][n]['LehrerIn'] + '\n' +
                                       'Raum: ' + vt[0][update.message.text][n]['Raum'] + '\n' +
                                       'Art: ' + vt[0][update.message.text][n]['Art'] + '\n' +
                                       'Hinweis: ' + vt[0][update.message.text][n]['Hinweis'] + '\n')
     except:
-        update.message.reply_text('Entweder ist das keine gültige Klasse, oder sie hat heute keine Vertretung.')
+        update.message.reply_text('Entweder ist das keine gültige Klasse, oder sie hat heute keine Vertretung.', reply_markup=ReplyKeyboardRemove())
 
     return ConversationHandler.END
 
