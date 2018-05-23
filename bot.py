@@ -25,7 +25,8 @@ def klasse(bot, update):
         r = requests.get('http://fbi.gruener-campus-malchow.de/cis/pupilplanapi', params=params)
         vt = json.loads(json.dumps(r.json()))
         update.message.reply_text('Hinweis: Aus Datenschutzgründen können keine Lehrernamen angezeigt werden.')
-        update.message.reply_text('Informationen:\n\n' + vt[0]['Informationen'][0])
+        for info in vt[0]['Informationen']:
+            update.message.reply_text('Informationen:\n\n' + info)
         for n in vt[0][update.message.text]:
             update.message.reply_text('Stunde: ' + vt[0][update.message.text][n]['Stunde'] + '\n' +
                                       'Fach: ' + vt[0][update.message.text][n]['Fach'] + '\n' +
