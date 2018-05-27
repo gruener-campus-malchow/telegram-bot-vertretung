@@ -1,8 +1,12 @@
 import logging
 import json
 import requests
+import sqlite3
 from telegram import (ReplyKeyboardRemove)
 from telegram.ext import (Updater, CommandHandler, MessageHandler, Filters, ConversationHandler)
+
+# Bot-Token hier einfügen
+token = ""
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO)
@@ -20,6 +24,16 @@ def start(bot, update):
 
 
 def klasse(bot, update):
+    try:
+        db = sqlite3.connect('data.db')
+        c = db.cursor()
+        c.execute('''CREATE TABLE IF NOT EXISTS users(id INT PRIMARY KEY, username VARCHAR(64), klasse VARCHAR(8))''')
+        c.execute('''INSERT INTO users(id, username, klasse) VALUES(?,?,?)''',
+                  (update.message.chat.id, update.message.chat.username, update.message.text))
+        db.commit()
+        db.close()
+    except:
+        pass
     try:
         params = {'cert': 0}
         r = requests.get('http://fbi.gruener-campus-malchow.de/cis/pupilplanapi', params=params)
@@ -51,8 +65,7 @@ def error(bot, update, error):
 
 
 def main():
-    # Bot-Token hier einfügen
-    updater = Updater("")
+    updater = Updater(token)
 
     dp = updater.dispatcher
 
