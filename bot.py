@@ -15,11 +15,17 @@ logger = logging.getLogger(__name__)
 
 KLASSE = range(1)
 
-db = sqlite3.connect('gvtbotdata.db')
+db = sqlite3.connect('gvtbotdata.db', check_same_thread=False)
 c = db.cursor()
-c.execute('''CREATE TABLE IF NOT EXISTS users(id INT PRIMARY KEY, username VARCHAR(64), klasse VARCHAR(8), UNIQUE(id, username))''')
+c.execute(
+    '''CREATE TABLE IF NOT EXISTS users(id INT PRIMARY KEY, username VARCHAR(64), klasse VARCHAR(8), UNIQUE(id, username))''')
 db.commit()
-db.close()
+
+
+def newUser(id, username, klasse):
+    c.execute('''INSERT OR IGNORE INTO users(id, username, klasse) VALUES(?,?,?)''', (id, username, klasse))
+    db.commit()
+
 
 def start(bot, update):
     update.message.reply_text('Gebe deine Klasse ein:')
@@ -29,11 +35,7 @@ def start(bot, update):
 
 def klasse(bot, update):
     user = update.message.from_user
-    db = sqlite3.connect('gvtbotdata.db')
-    c = db.cursor()
-    c.execute('''INSERT OR IGNORE INTO users(id, username, klasse) VALUES(?,?,?)''', (user.id, user.username, update.message.text))
-    db.commit()
-    db.close()
+    newUser(user.id, user.username, update.message.text)
     try:
         params = {'cert': 0}
         r = requests.get('http://fbi.gruener-campus-malchow.de/cis/pupilplanapi', params=params)
@@ -44,12 +46,13 @@ def klasse(bot, update):
         for n in vt[0][update.message.text]:
             update.message.reply_text('Stunde: ' + vt[0][update.message.text][n]['Stunde'] + '\n' +
                                       'Fach: ' + vt[0][update.message.text][n]['Fach'] + '\n' +
-                                      #'LehrerIn: ' + vt[0][update.message.text][n]['LehrerIn'] + '\n' +
+                                      # 'LehrerIn: ' + vt[0][update.message.text][n]['LehrerIn'] + '\n' +
                                       'Raum: ' + vt[0][update.message.text][n]['Raum'] + '\n' +
                                       'Art: ' + vt[0][update.message.text][n]['Art'] + '\n' +
                                       'Hinweis: ' + vt[0][update.message.text][n]['Hinweis'] + '\n')
     except:
-        update.message.reply_text('Entweder ist das keine gültige Klasse, oder sie hat heute keine Vertretung.', reply_markup=ReplyKeyboardRemove())
+        update.message.reply_text('Entweder ist das keine gültige Klasse, oder sie hat heute keine Vertretung.',
+                                  reply_markup=ReplyKeyboardRemove())
 
     return ConversationHandler.END
 
