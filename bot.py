@@ -15,25 +15,25 @@ logger = logging.getLogger(__name__)
 
 KLASSE = range(1)
 
+db = sqlite3.connect('gvtbotdata.db')
+c = db.cursor()
+c.execute('''CREATE TABLE IF NOT EXISTS users(id INT PRIMARY KEY, username VARCHAR(64), klasse VARCHAR(8), UNIQUE(id, username))''')
+db.commit()
+db.close()
 
 def start(bot, update):
-    user = update.message.from_user
     update.message.reply_text('Gebe deine Klasse ein:')
 
     return KLASSE
 
 
 def klasse(bot, update):
-    try:
-        db = sqlite3.connect('data.db')
-        c = db.cursor()
-        c.execute('''CREATE TABLE IF NOT EXISTS users(id INT PRIMARY KEY, username VARCHAR(64), klasse VARCHAR(8))''')
-        c.execute('''INSERT INTO users(id, username, klasse) VALUES(?,?,?)''',
-                  (update.message.chat.id, update.message.chat.username, update.message.text))
-        db.commit()
-        db.close()
-    except:
-        pass
+    user = update.message.from_user
+    db = sqlite3.connect('gvtbotdata.db')
+    c = db.cursor()
+    c.execute('''INSERT OR IGNORE INTO users(id, username, klasse) VALUES(?,?,?)''', (user.id, user.username, update.message.text))
+    db.commit()
+    db.close()
     try:
         params = {'cert': 0}
         r = requests.get('http://fbi.gruener-campus-malchow.de/cis/pupilplanapi', params=params)
