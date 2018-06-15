@@ -1,5 +1,5 @@
 # GCM-Vertretung
-Telegram-Bot, der den Vertretungsplan des [Grünen Campus Malchow](https://gruener-campus-malchow.de) anzeigt
+Telegram-Bot, der den Vertretungsplan des [Grünen Campus Malchow](http://gruener-campus-malchow.de) anzeigt
 ## Installation
 1. [Python 3 installieren](https://python.org)
 2. Benötigte Python-Module installieren
