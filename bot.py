@@ -7,7 +7,7 @@ from telegram import (ReplyKeyboardRemove)
 from telegram.ext import (Updater, CommandHandler, MessageHandler, Filters, ConversationHandler)
 
 # Bot-Token hier einfügen
-token = ""
+token = "612521189:AAFSkdDtj9yITpQXs7hOVffr5O9SFF_D04c"
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO)
@@ -33,23 +33,7 @@ def start(bot, update):
     try:
         c.execute('''SELECT klasse FROM users WHERE id = ?''', (user.id,))
         userklasse = c.fetchone()[0]
-        try:
-            params = {'cert': 0}
-            r = requests.get('http://fbi.gruener-campus-malchow.de/cis/pupilplanapi', params=params)
-            vt = json.loads(json.dumps(r.json()))
-            update.message.reply_text('Hinweis: Aus Datenschutzgründen können keine Lehrernamen angezeigt werden.')
-            for info in vt[0]['Informationen']:
-                update.message.reply_text('Informationen:\n\n' + info)
-            for n in vt[0][userklasse]:
-                update.message.reply_text('Stunde: ' + vt[0][userklasse][n]['Stunde'] + '\n' +
-                                          'Fach: ' + vt[0][userklasse][n]['Fach'] + '\n' +
-                                          # 'LehrerIn: ' + vt[0][userklasse][n]['LehrerIn'] + '\n' +
-                                          'Raum: ' + vt[0][userklasse][n]['Raum'] + '\n' +
-                                          'Art: ' + vt[0][userklasse][n]['Art'] + '\n' +
-                                          'Hinweis: ' + vt[0][userklasse][n]['Hinweis'] + '\n')
-        except:
-            update.message.reply_text('Entweder ist das keine gültige Klasse, oder sie hat heute keine Vertretung.',
-                                      reply_markup=ReplyKeyboardRemove())
+        sendplan(update, userklasse)
         return ConversationHandler.END
     except:
         update.message.reply_text('Gebe deine Klasse ein:')
@@ -59,24 +43,7 @@ def start(bot, update):
 def klasse(bot, update):
     user = update.message.from_user
     newUser(user.id, user.username, update.message.text)
-    try:
-        params = {'cert': 0}
-        r = requests.get('http://fbi.gruener-campus-malchow.de/cis/pupilplanapi', params=params)
-        vt = json.loads(json.dumps(r.json()))
-        update.message.reply_text('Hinweis: Aus Datenschutzgründen können keine Lehrernamen angezeigt werden.')
-        for info in vt[0]['Informationen']:
-            update.message.reply_text('Informationen:\n\n' + info)
-        for n in vt[0][update.message.text]:
-            update.message.reply_text('Stunde: ' + vt[0][update.message.text][n]['Stunde'] + '\n' +
-                                      'Fach: ' + vt[0][update.message.text][n]['Fach'] + '\n' +
-                                      # 'LehrerIn: ' + vt[0][update.message.text][n]['LehrerIn'] + '\n' +
-                                      'Raum: ' + vt[0][update.message.text][n]['Raum'] + '\n' +
-                                      'Art: ' + vt[0][update.message.text][n]['Art'] + '\n' +
-                                      'Hinweis: ' + vt[0][update.message.text][n]['Hinweis'] + '\n')
-    except:
-        update.message.reply_text('Entweder ist das keine gültige Klasse, oder sie hat heute keine Vertretung.',
-                                  reply_markup=ReplyKeyboardRemove())
-
+    sendplan(update, update.message.text)
     return ConversationHandler.END
 
 
@@ -94,6 +61,26 @@ def delklasse(bot, update):
         update.message.reply_text('Daten erfolgreich gelöscht')
     except:
         update.message.reply_text('Irgendwas ging schief')
+
+
+def sendplan(update, userklasse):
+    try:
+        params = {'cert': 0}
+        r = requests.get('http://fbi.gruener-campus-malchow.de/cis/pupilplanapi', params=params)
+        vt = json.loads(json.dumps(r.json()))
+        update.message.reply_text('Hinweis: Aus Datenschutzgründen können keine Lehrernamen angezeigt werden.')
+        for info in vt[0]['Informationen']:
+            update.message.reply_text('Informationen:\n\n' + info)
+        for n in vt[0][userklasse]:
+            update.message.reply_text('Stunde: ' + vt[0][userklasse][n]['Stunde'] + '\n' +
+                                      'Fach: ' + vt[0][userklasse][n]['Fach'] + '\n' +
+                                      # 'LehrerIn: ' + vt[0][userklasse][n]['LehrerIn'] + '\n' +
+                                      'Raum: ' + vt[0][userklasse][n]['Raum'] + '\n' +
+                                      'Art: ' + vt[0][userklasse][n]['Art'] + '\n' +
+                                      'Hinweis: ' + vt[0][userklasse][n]['Hinweis'] + '\n')
+    except:
+        update.message.reply_text('Entweder ist das keine gültige Klasse, oder sie hat heute keine Vertretung.',
+                                  reply_markup=ReplyKeyboardRemove())
 
 
 def error(bot, update, error):
