@@ -1,5 +1,5 @@
 # GCM-Vertretung
-Telegram-Bot, der den Vertretungsplan des [Grünen Campus Malchow](gruener-cmapus-malchow.de) anzeigt
+Telegram-Bot, der den Vertretungsplan des [Grünen Campus Malchow](gruener-campus-malchow.de) anzeigt
 ## Installation
 1. [Python 3 installieren](https://python.org)
 2. Benötigte Python-Module installieren
@@ -12,9 +12,10 @@ $ pip3 install python-telegram-bot
 4. Bot-Token in den Code einfügen
 
 ```python
-
+token = "MitTokenErsetzen"
 ```
-5.     
+5. Bot ausführen
        
-       
-       python3 bot.py
+```python
+$ python3 bot.py
+```
