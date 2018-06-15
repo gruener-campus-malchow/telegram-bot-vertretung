@@ -1,7 +1,8 @@
-import logging
 import json
-import requests
+import logging
 import sqlite3
+
+import requests
 from telegram import (ReplyKeyboardRemove)
 from telegram.ext import (Updater, CommandHandler, MessageHandler, Filters, ConversationHandler)
 
@@ -28,9 +29,31 @@ def newUser(id, username, klasse):
 
 
 def start(bot, update):
-    update.message.reply_text('Gebe deine Klasse ein:')
-
-    return KLASSE
+    user = update.message.from_user
+    try:
+        c.execute('''SELECT klasse FROM users WHERE id = ?''', (user.id,))
+        userklasse = c.fetchone()[0]
+        try:
+            params = {'cert': 0}
+            r = requests.get('http://fbi.gruener-campus-malchow.de/cis/pupilplanapi', params=params)
+            vt = json.loads(json.dumps(r.json()))
+            update.message.reply_text('Hinweis: Aus Datenschutzgründen können keine Lehrernamen angezeigt werden.')
+            for info in vt[0]['Informationen']:
+                update.message.reply_text('Informationen:\n\n' + info)
+            for n in vt[0][userklasse]:
+                update.message.reply_text('Stunde: ' + vt[0][userklasse][n]['Stunde'] + '\n' +
+                                          'Fach: ' + vt[0][userklasse][n]['Fach'] + '\n' +
+                                          # 'LehrerIn: ' + vt[0][userklasse][n]['LehrerIn'] + '\n' +
+                                          'Raum: ' + vt[0][userklasse][n]['Raum'] + '\n' +
+                                          'Art: ' + vt[0][userklasse][n]['Art'] + '\n' +
+                                          'Hinweis: ' + vt[0][userklasse][n]['Hinweis'] + '\n')
+        except:
+            update.message.reply_text('Entweder ist das keine gültige Klasse, oder sie hat heute keine Vertretung.',
+                                      reply_markup=ReplyKeyboardRemove())
+        return ConversationHandler.END
+    except:
+        update.message.reply_text('Gebe deine Klasse ein:')
+        return KLASSE
 
 
 def klasse(bot, update):
@@ -63,6 +86,16 @@ def cancel(bot, update):
     return ConversationHandler.END
 
 
+def delklasse(bot, update):
+    user = update.message.from_user
+    try:
+        c.execute('''DELETE FROM users WHERE id = ?''', (user.id,))
+        db.commit()
+        update.message.reply_text('Daten erfolgreich gelöscht')
+    except:
+        update.message.reply_text('Irgendwas ging schief')
+
+
 def error(bot, update, error):
     logger.warning('Update "%s" verursachte Fehler "%s"' % (update, error))
 
@@ -85,6 +118,8 @@ def main():
 
     dp.add_handler(conv_handler)
     dp.add_error_handler(error)
+    delklasseHandler = CommandHandler('delklasse', delklasse)
+    dp.add_handler(delklasseHandler)
 
     # Startet den Bot
     updater.start_polling()
