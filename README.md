@@ -16,6 +16,6 @@ token = "MitTokenErsetzen"
 ```
 5. Bot ausführen
        
-```python
+```bash
 $ python3 bot.py
 ```
