@@ -7,7 +7,7 @@ from telegram import (ReplyKeyboardRemove)
 from telegram.ext import (Updater, CommandHandler, MessageHandler, Filters, ConversationHandler)
 
 # Bot-Token hier einfügen
-token = "612521189:AAFSkdDtj9yITpQXs7hOVffr5O9SFF_D04c"
+token = ""
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO)
