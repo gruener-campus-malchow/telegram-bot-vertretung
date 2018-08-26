@@ -35,7 +35,7 @@ def start(bot, update):
     user = update.message.from_user
     try:
         c.execute('''SELECT klasse FROM users WHERE id = ?''', (user.id,))
-        sendplan(user.id, c.fetchone()[0])
+        sendplan(bot, user.id, c.fetchone()[0])
         return ConversationHandler.END
     except:
         update.message.reply_text('Gebe deine Klasse ein:')
@@ -45,7 +45,7 @@ def start(bot, update):
 def klasse(bot, update):
     user = update.message.from_user
     newUser(user.id, user.username, update.message.text)
-    sendplan(user.id, update.message.text)
+    sendplan(bot, user.id, update.message.text)
     return ConversationHandler.END
 
 
@@ -69,7 +69,7 @@ def delklasse(bot, update):
 #     print(args)
 
 
-def sendplan(userid, userklasse):
+def sendplan(bot, userid, userklasse):
     try:
         params = {'cert': 0}
         r = requests.get('http://fbi.gruener-campus-malchow.de/cis/pupilplanapi', params=params)
@@ -94,7 +94,7 @@ def sendplan(userid, userklasse):
 def updateAnAlle(bot, job):
     c.execute('''SELECT * FROM users''')
     for user in c.fetchall():
-        sendplan(user[0], user[2])
+        sendplan(bot, user[0], user[2])
 
 
 def error(bot, update, error):
