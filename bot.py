@@ -32,8 +32,7 @@ def start(bot, update):
     user = update.message.from_user
     try:
         c.execute('''SELECT klasse FROM users WHERE id = ?''', (user.id,))
-        userklasse = c.fetchone()[0]
-        sendplan(update, userklasse)
+        sendplan(bot, user.id, c.fetchone()[0])
         return ConversationHandler.END
     except:
         update.message.reply_text('Gebe deine Klasse ein:')
@@ -43,7 +42,7 @@ def start(bot, update):
 def klasse(bot, update):
     user = update.message.from_user
     newUser(user.id, user.username, update.message.text)
-    sendplan(update, update.message.text)
+    sendplan(bot, user.id, update.message.text)
     return ConversationHandler.END
 
 
@@ -63,7 +62,11 @@ def delklasse(bot, update):
         update.message.reply_text('Irgendwas ging schief')
 
 
-def sendplan(update, userklasse):
+# def setkurse(bot, update, args):
+#     print(args)
+
+
+def sendplan(bot, userid, userklasse):
     try:
         params = {'cert': 0}
         r = requests.get('http://fbi.gruener-campus-malchow.de/cis/pupilplanapi', params=params)
@@ -79,8 +82,15 @@ def sendplan(update, userklasse):
                                       'Art: ' + vt[0][userklasse][n]['Art'] + '\n' +
                                       'Hinweis: ' + vt[0][userklasse][n]['Hinweis'] + '\n')
     except:
-        update.message.reply_text('Entweder ist das keine gültige Klasse, oder sie hat heute keine Vertretung.',
-                                  reply_markup=ReplyKeyboardRemove())
+        bot.sendMessage(chat_id=userid,
+                        text='Entweder ist das keine gültige Klasse, oder sie hat heute keine Vertretung.',
+                        reply_markup=ReplyKeyboardRemove())
+
+
+def updateAnAlle(bot, job):
+    c.execute('''SELECT * FROM users''')
+    for user in c.fetchall():
+        sendplan(bot, user[0], user[2])
 
 
 def error(bot, update, error):
