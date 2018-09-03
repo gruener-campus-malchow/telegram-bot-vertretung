@@ -1,8 +1,8 @@
 import json
 import logging
 import sqlite3
-
 import requests
+import datetime
 from telegram import (ReplyKeyboardRemove)
 from telegram.ext import (Updater, CommandHandler, MessageHandler, Filters, ConversationHandler)
 
@@ -13,6 +13,8 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
                     level=logging.INFO)
 
 logger = logging.getLogger(__name__)
+
+morgens = datetime.time(hour=7)
 
 KLASSE = range(1)
 
@@ -62,25 +64,23 @@ def delklasse(bot, update):
         update.message.reply_text('Irgendwas ging schief')
 
 
-# def setkurse(bot, update, args):
-#     print(args)
-
 
 def sendplan(bot, userid, userklasse):
     try:
         params = {'cert': 0}
         r = requests.get('http://fbi.gruener-campus-malchow.de/cis/pupilplanapi', params=params)
         vt = json.loads(json.dumps(r.json()))
-        update.message.reply_text('Hinweis: Aus Datenschutzgründen können keine Lehrernamen angezeigt werden.')
+        bot.sendMessage(chat_id=userid,
+                        text='Hinweis: Aus Datenschutzgründen können keine Lehrernamen angezeigt werden.')
         for info in vt[0]['Informationen']:
-            update.message.reply_text('Informationen:\n\n' + info)
+            bot.sendMessage(chat_id=userid, text='Informationen:\n\n' + info)
         for n in vt[0][userklasse]:
-            update.message.reply_text('Stunde: ' + vt[0][userklasse][n]['Stunde'] + '\n' +
-                                      'Fach: ' + vt[0][userklasse][n]['Fach'] + '\n' +
-                                      # 'LehrerIn: ' + vt[0][userklasse][n]['LehrerIn'] + '\n' +
-                                      'Raum: ' + vt[0][userklasse][n]['Raum'] + '\n' +
-                                      'Art: ' + vt[0][userklasse][n]['Art'] + '\n' +
-                                      'Hinweis: ' + vt[0][userklasse][n]['Hinweis'] + '\n')
+            bot.sendMessage(chat_id=userid, text='Stunde: ' + vt[0][userklasse][n]['Stunde'] + '\n' +
+                                                 'Fach: ' + vt[0][userklasse][n]['Fach'] + '\n' +
+                                                 # 'LehrerIn: ' + vt[0][userklasse][n]['LehrerIn'] + '\n' +
+                                                 'Raum: ' + vt[0][userklasse][n]['Raum'] + '\n' +
+                                                 'Art: ' + vt[0][userklasse][n]['Art'] + '\n' +
+                                                 'Hinweis: ' + vt[0][userklasse][n]['Hinweis'] + '\n')
     except:
         bot.sendMessage(chat_id=userid,
                         text='Entweder ist das keine gültige Klasse, oder sie hat heute keine Vertretung.',
@@ -99,6 +99,7 @@ def error(bot, update, error):
 
 def main():
     updater = Updater(token)
+    job_queue = updater.job_queue
 
     dp = updater.dispatcher
 
@@ -113,10 +114,13 @@ def main():
         allow_reentry=True
     )
 
+    delklasseHandler = CommandHandler('delklasse', delklasse)
+
     dp.add_handler(conv_handler)
     dp.add_error_handler(error)
-    delklasseHandler = CommandHandler('delklasse', delklasse)
     dp.add_handler(delklasseHandler)
+
+    job_queue.run_daily(updateAnAlle, morgens, days=(0, 1, 2, 3, 4))
 
     # Startet den Bot
     updater.start_polling()
