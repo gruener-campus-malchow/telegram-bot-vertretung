@@ -22,7 +22,6 @@ db = sqlite3.connect('gvtbotdata.db', check_same_thread=False)
 c = db.cursor()
 c.execute(
     '''CREATE TABLE IF NOT EXISTS users(id INT PRIMARY KEY, username VARCHAR(64), klasse VARCHAR(8), UNIQUE(id, username))''')
-# c.execute('''CREATE TABLE IF NOT EXISTS kurse(id INT PRIMARY KEY, username VARCHAR(64), klasse VARCHAR(8), UNIQUE(id, username))''')
 db.commit()
 
 
@@ -64,9 +63,6 @@ def delklasse(bot, update):
     except:
         update.message.reply_text('Irgendwas ging schief')
 
-
-# def setkurse(bot, update, args):
-#     print(args)
 
 
 def sendplan(bot, userid, userklasse):
@@ -119,12 +115,10 @@ def main():
     )
 
     delklasseHandler = CommandHandler('delklasse', delklasse)
-    # setkurseHandler = CommandHandler('setkurse', setkurse, pass_args=True)
 
     dp.add_handler(conv_handler)
     dp.add_error_handler(error)
     dp.add_handler(delklasseHandler)
-    # dp.add_handler(setkurseHandler)
 
     job_queue.run_daily(updateAnAlle, morgens, days=(0, 1, 2, 3, 4))
 
