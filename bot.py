@@ -14,7 +14,7 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 
 logger = logging.getLogger(__name__)
 
-morgens = datetime.time(hour=7)
+morgens = datetime.time(hour=7, minute=30)
 
 KLASSE = range(1)
 
